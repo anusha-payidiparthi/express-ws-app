@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><title>Real-Time Chat</title>
+</head>
+<body>
+    <h2>Express Chat Room</h2>
+    <input type="text" id="username" placeholder="Username" /><br><br>
+    <input type="text" id="msg" placeholder="Type a message..." />
+    <button onclick="send()">Send</button>
+    <div id="box"></div>
+
+    <script>
+        const socket = new WebSocket(`ws://${window.location.host}`);
+
+        socket.onopen = () => {
+            // Subscribe to the chat stream channel
+            socket.send(JSON.stringify({ type: 'subscribe', channel: 'chat' }));
+        };
+
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === 'chat_msg') {
+                document.getElementById('box').innerHTML += `<p><b>${data.user}:</b> ${data.text}</p>`;
+            }
+        };
+
+        function send() {
+            const user = document.getElementById('username').value || 'Anonymous';
+            const text = document.getElementById('msg').value;
+            socket.send(JSON.stringify({ type: 'chat_msg', user, text }));
+            document.getElementById('msg').value = '';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><title>Live Admin Dashboard</title>
+</head>
+<body>
+    <h2>Live System Metrics</h2>
+    <div><strong>Active Socket Connections:</strong> <span id="connections">0</span></div>
+    <div><strong>Total Chat Messages Processed:</strong> <span id="messages">0</span></div>
+
+    <script>
+        const socket = new WebSocket(`ws://${window.location.host}`);
+
+        socket.onopen = () => {
+            // Subscribe exclusively to the system dashboard updates
+            socket.send(JSON.stringify({ type: 'subscribe', channel: 'dashboard' }));
+        };
+
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === 'metrics_update') {
+                document.getElementById('connections').innerText = data.activeConnections;
+                document.getElementById('messages').innerText = data.totalMessages;
+            }
+        };
+    </script>
+</body>
+</html>
